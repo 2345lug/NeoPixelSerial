@@ -2,6 +2,7 @@ import time
 from rpi_ws281x import *
 from gpiozero import Button
 import struct
+import serial
 import numpy as np
 import math
 import subprocess
@@ -79,6 +80,24 @@ LED_COLOR = {
     "EthI": [[234, 100, 88]],
     "EthO": [[150, 100, 100]]
 }
+
+##Serial port configuration##
+
+SERIAL_PORT = '/dev/ttyS0' #Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
+SERIAL_BAUDRATE = 9600
+SERIAL_PARITY = serial.PARITY_NONE
+SERIAL_STOPBITS = serial.STOPBITS_ONE
+SERIAL_BYTESIZE = serial.EIGHTBITS
+SERIAL_TIMEOUT = 1
+
+serial1 = serial.Serial(
+        port= SERIAL_PORT, 
+        baudrate = SERIAL_BAUDRATE,
+        parity=SERIAL_PARITY,
+        stopbits=SERIAL_STOPBITS,
+        bytesize=SERIAL_BYTESIZE,
+        timeout=SERIAL_TIMEOUT
+)
 
 ## Functions ##
 
