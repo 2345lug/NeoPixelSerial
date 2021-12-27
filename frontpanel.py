@@ -243,7 +243,7 @@ def ffmpeg_thread(bufferArray):
                 bufferArray[LED_MAP["ffmpeg"]] = Color(int(rL), int(gL), int(bL))
                 time.sleep(0.04)
 
-def process_feed_audio(path, map_name, strip):
+def process_feed_audio(path, map_name, bufferArray):
     time.sleep(1)
     t_list = [JACK_METER_PATH, path] + JACK_METER_PARAMS
     print(t_list)
@@ -275,7 +275,7 @@ def process_feed_audio(path, map_name, strip):
 
         (rL, gL, bL) = hsv_to_rgb(hue, sat, signal)
         #print(gL)
-        strip.setPixelColor(LED_MAP[map_name], Color(int(rL), int(gL), int(bL)))
+        bufferArray[LED_MAP[map_name]] = Color(int(rL), int(gL), int(bL))
         time.sleep(0.01)
 
 
