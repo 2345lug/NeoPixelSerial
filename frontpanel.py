@@ -178,13 +178,13 @@ def hsv_to_rgb(hue, sat, value):
         return (v, p, q)
 
 
-def set_power_led(strip):
+def set_power_led(bufferArray):
     [hue, sat, val] = LED_COLOR["program_running"][0]
     (h, s, b) = hsv_to_rgb(hue, sat, val)
-    strip.setPixelColor(LED_MAP["program_running"],
-                        Color(int(h), int(s), int(b)))
+    bufferArray[LED_MAP["program_running"]] = Color(int(h), int(s), int(b))
+       
 
-def set_lan_statusTx(strip):
+def set_lan_statusTx(bufferArray):
     [hue, sat, val] = LED_COLOR["EthO"][0]
     br = (deltaTx / UPPER_THRESHOLD)
     #print(br)
@@ -195,8 +195,7 @@ def set_lan_statusTx(strip):
     # br = 100
     #print(br)
     (h, s, b) = hsv_to_rgb(hue, sat, br)
-    strip.setPixelColor(LED_MAP["EthO"],
-    Color(int(h), int(s), int(b)))
+    bufferArray[LED_MAP["EthO"]] = Color(int(h), int(s), int(b))
 
 def set_lan_statusRx(strip):
     [hue, sat, val] = LED_COLOR["EthI"][0]
@@ -207,9 +206,8 @@ def set_lan_statusRx(strip):
      sat = 100
      br = 88
     (h, s, b) = hsv_to_rgb(hue, sat, br)
-    strip.setPixelColor(LED_MAP["EthI"],
-    Color(int(h), int(s), int(b)))
-
+    bufferArray[LED_MAP["EthI"]] = Color(int(h), int(s), int(b))
+    
 def parse_line(b):
     try:
         return float(b)
@@ -331,11 +329,11 @@ if __name__ == '__main__':
         disconnect_outputs()
 
         while True:
-            set_power_led(strip)
-            set_lan_statusTx(strip)
-            set_lan_statusRx(strip)
-            printstats()
-            strip.show()
+            set_power_led(colorsBuffer)
+            set_lan_statusTx(colorsBuffer)
+            set_lan_statusRx(colorsBuffer)
+            setStripSerial(colorsBuffer, serial1)
+            printstats()            
             time.sleep(0.02)
 
     except KeyboardInterrupt:
