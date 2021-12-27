@@ -222,7 +222,7 @@ def map_level_to_pwm(level):
     except:
         return 0
 
-def ffmpeg_thread(strip):
+def ffmpeg_thread(bufferArray):
 
     global program_running
     #print("FFMPEG THREAD")
@@ -231,16 +231,16 @@ def ffmpeg_thread(strip):
     while program_running:
         not_running = check_ffmpeg()
         if not_running:
-            strip.setPixelColor(LED_MAP["ffmpeg"], Color(255, 0, 0))
+            bufferArray[LED_MAP["ffmpeg"]] = Color(255, 0, 0)
             #time.sleep(1)
         else:
             for i in range(0, 100, 4):
                 (rL, gL, bL) = hsv_to_rgb(hue, sat, i)
-                strip.setPixelColor(LED_MAP["ffmpeg"], Color(int(rL), int(gL), int(bL)))
+                bufferArray[LED_MAP["ffmpeg"]] = Color(int(rL), int(gL), int(bL))
                 time.sleep(0.04)
             for i in range(100, 0, -4):
                 (rL, gL, bL) = hsv_to_rgb(hue, sat, i)
-                strip.setPixelColor(LED_MAP["ffmpeg"], Color(int(rL), int(gL), int(bL)))
+                bufferArray[LED_MAP["ffmpeg"]] = Color(int(rL), int(gL), int(bL))
                 time.sleep(0.04)
 
 def process_feed_audio(path, map_name, strip):
@@ -305,7 +305,7 @@ if __name__ == '__main__':
     clear_strip(colorsBuffer)
     #set_power_led(strip)
     colorWipe(colorsBuffer, Color(0, 255, 128))
-    x = threading.Thread(target=ffmpeg_thread, args=(strip,))
+    x = threading.Thread(target=ffmpeg_thread, args=(colorsBuffer,))
 
     x_ip1 = threading.Thread(target=process_feed_audio, args=(DEVICE_INPUT_LEFT,"ch1_ip", strip, ))
     x_ip2 = threading.Thread(target=process_feed_audio, args=(DEVICE_INPUT_RIGHT,"ch2_ip", strip, ))
