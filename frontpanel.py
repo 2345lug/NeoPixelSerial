@@ -22,7 +22,7 @@ LED_CHANNEL = 0 # set to '1' for GPIOs 13, 19, 41, 45 or 53
 ### SD Card Monitor Configuration ###
 
 STATUS_PIN = 13
-SD_STATUS = Button(STATUS_PIN)
+#SD_STATUS = Button(STATUS_PIN)  #Commented for simulation purpose!
 SD_LIGHT = 0
 
 ### JACK Audio Metering Configuration ###
@@ -83,8 +83,8 @@ LED_COLOR = {
 
 ##Serial port configuration##
 
-SERIAL_PORT = '/dev/ttyS0' #Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0
-SERIAL_BAUDRATE = 9600
+SERIAL_PORT = '/dev/tnt0' #Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0. TNT0 is test virtual serial port
+SERIAL_BAUDRATE = 115200
 SERIAL_PARITY = serial.PARITY_NONE
 SERIAL_STOPBITS = serial.STOPBITS_ONE
 SERIAL_BYTESIZE = serial.EIGHTBITS
@@ -98,6 +98,10 @@ serial1 = serial.Serial(
         bytesize=SERIAL_BYTESIZE,
         timeout=SERIAL_TIMEOUT
 )
+
+##Color buffer global array##
+
+colorsBuffer = []
 
 ## Functions ##
 
@@ -286,7 +290,7 @@ if __name__ == '__main__':
     strip = Adafruit_NeoPixel(
         LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
     # Intialize the library (must be called once before other functions).
-    strip.begin()
+    #strip.begin() #STRIP removing from code
     print('Press Ctrl-C to quit.')
 
     clear_strip(strip)
