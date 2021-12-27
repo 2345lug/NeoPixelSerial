@@ -90,20 +90,17 @@ SERIAL_STOPBITS = serial.STOPBITS_ONE
 SERIAL_BYTESIZE = serial.EIGHTBITS
 SERIAL_TIMEOUT = 1
 
-serial1 = serial.Serial(
-        port= SERIAL_PORT, 
-        baudrate = SERIAL_BAUDRATE,
-        parity=SERIAL_PARITY,
-        stopbits=SERIAL_STOPBITS,
-        bytesize=SERIAL_BYTESIZE,
-        timeout=SERIAL_TIMEOUT
-)
+
 
 ##Color buffer global array##
 
-colorsBuffer = []
+colorsBuffer = np.array([Color(0,0,0)] * LED_COUNT)
 
 ## Functions ##
+
+def setStripSerial(bufferArray, serialPort):
+    sendBuffer = bufferArray.tobytes()
+    serialPort.write(sendBuffer)
 
 def get_network_bytes(interface):
     for line in open('/proc/net/dev', 'r'):
@@ -133,17 +130,17 @@ def printstats():
     if deltaRx < 67:
      deltaRx = 0
 
-def colorWipe(strip, color, wait_ms=200):
+def colorWipe(bufferArray, color, wait_ms=200):
     """Wipe color across display a pixel at a time."""
-    for i in range(strip.numPixels()):
-        strip.setPixelColor(i, color)
-        strip.show()
-        time.sleep(wait_ms/2000.0)
-
-def clear_strip(strip):
     for i in range(LED_COUNT):
-        strip.setPixelColor(i, 0)
-    strip.show()
+        bufferArray[i] = color
+        setStripSerial(bufferArray, serial1)
+        time.sleep(wait_ms/2000.0)
+    
+def clear_strip(bufferArray):
+    for i in range(LED_COUNT):
+        bufferArray[i] = Color(0,0,0)
+    setStripSerial(bufferArray, serial1)
 
 
 def check_ffmpeg():
@@ -287,15 +284,29 @@ def process_feed_audio(path, map_name, strip):
 #### Main Program ####
 
 if __name__ == '__main__':
-    strip = Adafruit_NeoPixel(
-        LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+    #strip = Adafruit_NeoPixel(
+    #   LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
     # Intialize the library (must be called once before other functions).
     #strip.begin() #STRIP removing from code
+
+    #Serial port initialization
+
+    serial1 = serial.Serial(
+        port= SERIAL_PORT, 
+        baudrate = SERIAL_BAUDRATE,
+        parity=SERIAL_PARITY,
+        stopbits=SERIAL_STOPBITS,
+        bytesize=SERIAL_BYTESIZE,
+        timeout=SERIAL_TIMEOUT
+    )   
+
+    serial1.write(b"Serial started sucessfully")
+
     print('Press Ctrl-C to quit.')
 
-    clear_strip(strip)
+    clear_strip(colorsBuffer)
     #set_power_led(strip)
-    colorWipe(strip, Color(0, 255, 128))
+    colorWipe(colorsBuffer, Color(0, 255, 128))
     x = threading.Thread(target=ffmpeg_thread, args=(strip,))
 
     x_ip1 = threading.Thread(target=process_feed_audio, args=(DEVICE_INPUT_LEFT,"ch1_ip", strip, ))
