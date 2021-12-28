@@ -94,7 +94,7 @@ SERIAL_TIMEOUT = 1
 
 ##Color buffer global array##
 
-colorsBuffer = np.array([Color(0,0,0)] * LED_COUNT)
+colorsBuffer = np.array([Color(0,0,0)] * LED_COUNT, dtype=np.uint32)
 
 ## Functions ##
 
