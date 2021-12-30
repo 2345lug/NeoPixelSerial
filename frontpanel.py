@@ -100,6 +100,8 @@ colorsBuffer = np.array([Color(0,0,0)] * LED_COUNT, dtype=np.uint32)
 
 def setStripSerial(bufferArray, serialPort):
     sendBuffer = bufferArray.tobytes()
+    np.append(sendBuffer, 13)
+    np.append(sendBuffer, 10)
     serialPort.write(sendBuffer)
 
 def get_network_bytes(interface):
@@ -307,10 +309,10 @@ if __name__ == '__main__':
     colorWipe(colorsBuffer, Color(0, 255, 128))
     x = threading.Thread(target=ffmpeg_thread, args=(colorsBuffer,))
 
-    x_ip1 = threading.Thread(target=process_feed_audio, args=(DEVICE_INPUT_LEFT,"ch1_ip", strip, ))
-    x_ip2 = threading.Thread(target=process_feed_audio, args=(DEVICE_INPUT_RIGHT,"ch2_ip", strip, ))
-    x_op1 = threading.Thread(target=process_feed_audio, args=(DEVICE_OUTPUT_LEFT,"ch1_op", strip, ))
-    x_op2 = threading.Thread(target=process_feed_audio, args=(DEVICE_OUTPUT_RIGHT,"ch2_op", strip, ))
+    x_ip1 = threading.Thread(target=process_feed_audio, args=(DEVICE_INPUT_LEFT,"ch1_ip", colorsBuffer, ))
+    x_ip2 = threading.Thread(target=process_feed_audio, args=(DEVICE_INPUT_RIGHT,"ch2_ip", colorsBuffer, ))
+    x_op1 = threading.Thread(target=process_feed_audio, args=(DEVICE_OUTPUT_LEFT,"ch1_op", colorsBuffer, ))
+    x_op2 = threading.Thread(target=process_feed_audio, args=(DEVICE_OUTPUT_RIGHT,"ch2_op", colorsBuffer, ))
 
     x_ip1.start()
     time.sleep(0.2)
