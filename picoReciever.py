@@ -50,9 +50,6 @@ def setNeopixelData(colorsArray, strip, pixelShift):
     for i in range(LED_COUNT):           
         strip.setPixelColor(i + pixelShift, colorsArray[i])   
 
-    
-
-
 
 while(1):
  
