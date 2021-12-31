@@ -39,15 +39,29 @@ serial1 = serial.Serial(
     timeout=SERIAL_TIMEOUT
 )   
 
-while(1):
+def bytesToInt(byteValues, intValue):
+    intValue = int.from_bytes(byteValues, "big")
 
+def inputStringParse(inputString, colorsArray):
+    for i in range(LED_COUNT):   
+        colorsArray[i] = Color((inputString[i * 3 + 0]), (inputString[i * 3 + 1]), (inputString[i * 3 + 2])) 
+
+def setNeopixelData(colorsArray, strip, pixelShift):
+    for i in range(LED_COUNT):           
+        strip.setPixelColor(i + pixelShift, colorsArray[i])   
+
+    
+
+
+
+while(1):
+ 
     # Wait until there is data waiting in the serial buffer
     if(serial1.in_waiting > 0):
 
         # Read data out of the buffer until a carraige return / new line is found
         serialString = serial1.readline()
 
-        # Print the contents of the serial data
-        print(serialString.decode('Ascii'))
+        inputStringParse(serialString, colorsBuffer)
 
         

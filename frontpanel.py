@@ -99,10 +99,18 @@ colorsBuffer = np.array([Color(0,0,0)] * LED_COUNT, dtype=np.uint32)
 ## Functions ##
 
 def setStripSerial(bufferArray, serialPort):
-    sendBuffer = bufferArray.tobytes()
-    np.append(sendBuffer, 13)
-    np.append(sendBuffer, 10)
+    sendBuffer = []
+    for i in range(LED_COUNT):        
+        
+        sendBuffer.append(bufferArray[i] & 255)
+        sendBuffer.append((bufferArray[i] >> 8) & 255)
+        sendBuffer.append((bufferArray[i] >> 16) & 255)       
+        
+    sendBuffer.append(13)
+    sendBuffer.append(10)
+    #sendBuffer.append(sendBuffer, 10)
     serialPort.write(sendBuffer)
+    #serialPort.write(b"\r\n")
 
 def get_network_bytes(interface):
     for line in open('/proc/net/dev', 'r'):
@@ -300,13 +308,11 @@ if __name__ == '__main__':
         timeout=SERIAL_TIMEOUT
     )   
 
-    serial1.write(b"Serial started sucessfully")
-
     print('Press Ctrl-C to quit.')
 
     clear_strip(colorsBuffer)
     #set_power_led(strip)
-    colorWipe(colorsBuffer, Color(0, 255, 128))
+    colorWipe(colorsBuffer, Color(64, 255, 128))
     x = threading.Thread(target=ffmpeg_thread, args=(colorsBuffer,))
 
     x_ip1 = threading.Thread(target=process_feed_audio, args=(DEVICE_INPUT_LEFT,"ch1_ip", colorsBuffer, ))
