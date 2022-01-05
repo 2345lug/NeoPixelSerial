@@ -15,7 +15,7 @@ SERIAL_BAUDRATE = 115200
 ##Color buffer global array##
 
 colorsBuffer = ([0,0,0] * LED_COUNT)
-pixels = Neopixel(numpix, 0, 28, "GRB")
+pixels = Neopixel(LED_COUNT, 0, 28, "GRB")
 
 serialString = ""                           # Used to hold data coming over UART
 
@@ -42,6 +42,6 @@ while(1):
         # Read data out of the buffer until a carraige return / new line is found
         serialString = serial1.readline()
         inputStringParse(serialString, colorsBuffer)
-        setNetopixelData(colorsBuffer, pixels, FIRST_STRIP_SHIFT)
+        setNeopixelData(colorsBuffer, pixels, FIRST_STRIP_SHIFT)
 
         
