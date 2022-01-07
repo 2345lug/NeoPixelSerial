@@ -8,7 +8,6 @@ import math
 import subprocess
 import threading
 
-
 ### LED Strip Configuration ###
 
 LED_COUNT = 8 # Number of LED pixels.
@@ -70,6 +69,8 @@ LED_MAP = {
     "EthO": 7
 }
 
+## HSV Values
+
 LED_COLOR = {
     "program_running": [[150, 100, 100]],
     "ffmpeg": [[150, 100, 100]],
@@ -83,14 +84,12 @@ LED_COLOR = {
 
 ##Serial port configuration##
 
-SERIAL_PORT = '/dev/tnt0' #Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0. TNT0 is test virtual serial port
+SERIAL_PORT = '/dev/ttyAMA0' #Replace ttyS0 with ttyAM0 for Pi1,Pi2,Pi0. TNT0 is test virtual serial port
 SERIAL_BAUDRATE = 115200
 SERIAL_PARITY = serial.PARITY_NONE
 SERIAL_STOPBITS = serial.STOPBITS_ONE
 SERIAL_BYTESIZE = serial.EIGHTBITS
 SERIAL_TIMEOUT = 1
-
-
 
 ##Color buffer global array##
 
@@ -100,16 +99,17 @@ colorsBuffer = np.array([Color(0,0,0)] * LED_COUNT, dtype=np.uint32)
 
 def setStripSerial(bufferArray, serialPort):
     sendBuffer = []
-    for i in range(LED_COUNT):        
-        
+    for i in range(LED_COUNT):
+
         sendBuffer.append(bufferArray[i] & 255)
         sendBuffer.append((bufferArray[i] >> 8) & 255)
-        sendBuffer.append((bufferArray[i] >> 16) & 255)       
-        
+        sendBuffer.append((bufferArray[i] >> 16) & 255)
+
     sendBuffer.append(13)
     sendBuffer.append(10)
     #sendBuffer.append(sendBuffer, 10)
     serialPort.write(sendBuffer)
+    #print(sendBuffer)
     #serialPort.write(b"\r\n")
 
 def get_network_bytes(interface):
@@ -133,11 +133,12 @@ def printstats():
     currRx = (rx_bytes)
     deltaTx = currTx - last_valueTx
     deltaRx = currRx - last_valueRx
+    #print(deltaRx)
     last_valueTx = currTx
     last_valueRx = currRx
     if deltaTx < 111:
      deltaTx = 0
-    if deltaRx < 67:
+    if deltaRx < 68:
      deltaRx = 0
 
 def colorWipe(bufferArray, color, wait_ms=200):
@@ -146,7 +147,7 @@ def colorWipe(bufferArray, color, wait_ms=200):
         bufferArray[i] = color
         setStripSerial(bufferArray, serial1)
         time.sleep(wait_ms/2000.0)
-    
+
 def clear_strip(bufferArray):
     for i in range(LED_COUNT):
         bufferArray[i] = Color(0,0,0)
@@ -190,9 +191,16 @@ def hsv_to_rgb(hue, sat, value):
 
 def set_power_led(bufferArray):
     [hue, sat, val] = LED_COLOR["program_running"][0]
-    (h, s, b) = hsv_to_rgb(hue, sat, val)
-    bufferArray[LED_MAP["program_running"]] = Color(int(h), int(s), int(b))
-       
+    #print(hue,sat,val)
+    #print(sat)
+    #print(val)
+    (r, g, b) = hsv_to_rgb(hue, sat, val)
+    #print(h, s, v)
+    bufferArray[LED_MAP["program_running"]] = Color(int(b), int(g), int(r))
+    #bufferArray[LED_MAP["program_running"]] = Color(0,255,128)
+    #test = Color(0,255,128)
+    #print(test)
+
 
 def set_lan_statusTx(bufferArray):
     [hue, sat, val] = LED_COLOR["EthO"][0]
@@ -204,20 +212,23 @@ def set_lan_statusTx(bufferArray):
     # sat = 0
     # br = 100
     #print(br)
-    (h, s, b) = hsv_to_rgb(hue, sat, br)
-    bufferArray[LED_MAP["EthO"]] = Color(int(h), int(s), int(b))
+    (r, g, b) = hsv_to_rgb(hue, sat, br)
+    bufferArray[LED_MAP["EthO"]] = Color(int(b), int(g), int(r))
 
-def set_lan_statusRx(strip):
+def set_lan_statusRx(bufferArray):
     [hue, sat, val] = LED_COLOR["EthI"][0]
     br = (deltaRx / UPPER_THRESHOLD)
     br = br if br < 100 else 100
-    if deltaRx > 0 < 100:
+    #print(deltaRx)
+    if deltaRx > 1 < 100:
      hue = 234
      sat = 100
      br = 88
-    (h, s, b) = hsv_to_rgb(hue, sat, br)
-    bufferArray[LED_MAP["EthI"]] = Color(int(h), int(s), int(b))
-    
+     (r, g, b) = hsv_to_rgb(hue, sat, br)
+     bufferArray[LED_MAP["EthI"]] = Color(int(b), int(g), int(r))
+    if deltaRx < 1:
+     bufferArray[LED_MAP["EthI"]] = Color(0, 0, 0)
+
 def parse_line(b):
     try:
         return float(b)
@@ -245,12 +256,12 @@ def ffmpeg_thread(bufferArray):
             #time.sleep(1)
         else:
             for i in range(0, 100, 4):
-                (rL, gL, bL) = hsv_to_rgb(hue, sat, i)
-                bufferArray[LED_MAP["ffmpeg"]] = Color(int(rL), int(gL), int(bL))
+                (r, g, b) = hsv_to_rgb(hue, sat, i)
+                bufferArray[LED_MAP["ffmpeg"]] = Color(int(b), int(g), int(r))
                 time.sleep(0.04)
             for i in range(100, 0, -4):
-                (rL, gL, bL) = hsv_to_rgb(hue, sat, i)
-                bufferArray[LED_MAP["ffmpeg"]] = Color(int(rL), int(gL), int(bL))
+                (r, g, b) = hsv_to_rgb(hue, sat, i)
+                bufferArray[LED_MAP["ffmpeg"]] = Color(int(b), int(g), int(r))
                 time.sleep(0.04)
 
 def process_feed_audio(path, map_name, bufferArray):
@@ -283,9 +294,9 @@ def process_feed_audio(path, map_name, bufferArray):
         # hue = 0
         # sat = 100
 
-        (rL, gL, bL) = hsv_to_rgb(hue, sat, signal)
+        (r, g, b) = hsv_to_rgb(hue, sat, signal)
         #print(gL)
-        bufferArray[LED_MAP[map_name]] = Color(int(rL), int(gL), int(bL))
+        bufferArray[LED_MAP[map_name]] = Color(int(b), int(g), int(r))
         time.sleep(0.01)
 
 
@@ -312,7 +323,7 @@ if __name__ == '__main__':
 
     clear_strip(colorsBuffer)
     #set_power_led(strip)
-    colorWipe(colorsBuffer, Color(64, 255, 128))
+    colorWipe(colorsBuffer, Color(128, 255, 64))
     x = threading.Thread(target=ffmpeg_thread, args=(colorsBuffer,))
 
     x_ip1 = threading.Thread(target=process_feed_audio, args=(DEVICE_INPUT_LEFT,"ch1_ip", colorsBuffer, ))
@@ -337,11 +348,12 @@ if __name__ == '__main__':
         disconnect_outputs()
 
         while True:
+            printstats() 
             set_power_led(colorsBuffer)
             set_lan_statusTx(colorsBuffer)
             set_lan_statusRx(colorsBuffer)
             setStripSerial(colorsBuffer, serial1)
-            printstats()            
+            printstats()
             time.sleep(0.02)
 
     except KeyboardInterrupt:
@@ -352,4 +364,4 @@ if __name__ == '__main__':
         x_op2.join()
         x.join()
         print("Break Command Received! Clearing LEDs")
-        clear_strip(strip)
+        #clear_strip(strip)
